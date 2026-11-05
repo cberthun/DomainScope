@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 /**
  * Einrichtung: erzeugt .env (falls nötig), APP_KEY und den Passwort-Hash (argon2id/bcrypt).
- * Aufruf:  php bin/setup.php [--user=admin] [--password=...]
+ * Aufruf:  php bin/setup.php [--user=admin] [--password=...|--password-file=Datei]
  * Ohne --password wird interaktiv gefragt (Eingabe wird auf Unix-Terminals nicht angezeigt).
  */
 
@@ -35,6 +35,15 @@ if ($user === null) {
     $user = trim((string) fgets(STDIN)) ?: 'admin';
 }
 $password = $args['password'] ?? null;
+if ($password === null && isset($args['password-file'])) {
+    // Passwort aus Datei (erste Zeile): vermeidet das Passwort in der Prozessliste (install.sh)
+    $line = is_readable($args['password-file']) ? file($args['password-file'], FILE_IGNORE_NEW_LINES) : false;
+    if ($line === false || !isset($line[0])) {
+        fwrite(STDERR, "Passwortdatei nicht lesbar oder leer.\n");
+        exit(1);
+    }
+    $password = rtrim($line[0], "\r\n");
+}
 if ($password === null) {
     $unix = DIRECTORY_SEPARATOR === '/';
     echo 'Neues Passwort (mind. 12 Zeichen): ';

@@ -17,3 +17,5 @@
 .claude/
 /storage/cron.lock
 /PROMPT.md
+/dist/
+/storage/update.lock

@@ -2,6 +2,7 @@
 
 1. [Requirements](#requirements)
 2. [Installation](#installation)
+   ([updates](#updating-domainscope), [backup and restore](#backup-and-restore), [uninstall](#uninstall), [HTTPS](#https))
 3. [Configuration](#configuration)
 4. [Database migrations](#database-migrations)
 5. [Cron jobs](#cron-jobs)
@@ -24,8 +25,35 @@
 
 ## Installation
 
+### With the installer (Debian / Ubuntu)
+
+Download a release, verify its checksum and run `install.sh` as root (see the [README](../README.md#installation)):
+
 ```bash
-git clone https://github.com/cberthun/domainscope.git domainscope && cd domainscope
+tar -xzf domainscope-X.Y.Z.tar.gz && cd domainscope-X.Y.Z
+sudo ./install.sh --install-deps --domain domainscope.example.org
+```
+
+What it does: checks PHP ≥ 8.4 and the extensions; with `--install-deps` installs `php-fpm`, the PHP extensions, `mariadb-server` and nginx
+(or Apache with `--webserver apache`); copies the code to `/var/www/domainscope` (`--dir`); creates the database and a database user with a
+generated password (or uses an existing server with `--db-host` and `--db-pass-file`); writes `.env`; sets up the login (asked for, from
+`--admin-password-file`, or generated and shown once); runs the migrations and `bin/health.php`; creates `/etc/cron.d/domainscope`
+(every 30 minutes and a daily subdomain scan, run as the web user); creates a virtual host. Existing files are never overwritten.
+
+Permissions: the code belongs to `root:www-data` and is read-only for the web server; only `storage/` is writable for it; `.env` is `640`.
+Options: `./install.sh --help` (`--https` sets `FORCE_HTTPS=1`, `--no-cron`, `--non-interactive`, `-y`).
+
+On Ubuntu 24.04 PHP 8.3 is the default; install PHP 8.4 from a package source such as `ondrej/php` first.
+
+### HTTPS
+
+The installer creates an HTTP virtual host. Add a certificate, for example with Certbot (`sudo certbot --nginx -d domainscope.example.org`), then
+set `FORCE_HTTPS=1` and `APP_URL=https://…` in `.env`. Do not use the application over plain HTTP outside a trusted network.
+
+### Manual installation (development)
+
+```bash
+git clone https://github.com/cberthun/DomainScope.git domainscope && cd domainscope
 php bin/setup.php            # creates .env, APP_KEY and the password hash (asks for user name and password)
 # set DB_HOST, DB_NAME, DB_USER, DB_PASS in .env and create the database:
 #   CREATE DATABASE domainscope CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
@@ -35,7 +63,7 @@ php bin/migrate.php          # create the schema
 php -S 127.0.0.1:8080 -t public
 ```
 
-Without a configured password the application refuses every request (page “Einrichtung erforderlich”).
+Without a configured password the application refuses every request (page “Einrichtung erforderlich”). `php bin/health.php` checks the setup.
 
 ### Updating the bundled data
 
@@ -50,10 +78,38 @@ curl -fL https://curl.se/ca/cacert.pem -o storage/data/cacert.pem
 ### Updating DomainScope
 
 ```bash
-git pull && php bin/migrate.php
+sudo /var/www/domainscope/update.sh --check     # installed and available version
+sudo /var/www/domainscope/update.sh             # update to the latest release
+sudo /var/www/domainscope/update.sh --version 1.1.0
+sudo /var/www/domainscope/update.sh --file domainscope-1.1.0.tar.gz --sha256 <hash>    # offline
 ```
 
-Read the [CHANGELOG](../CHANGELOG.md) first.
+Flow: download of `domainscope-<version>.tar.gz` and `.sha256` from the GitHub release → checksum check → safety checks of the archive
+(no absolute paths, `..` or links; no downgrade without `--allow-downgrade`) → **backup** (database, code, `.env`) → copy the new files →
+migrations → `bin/health.php` and a request to `APP_URL/login` → on any error an **automatic rollback** (code, and the database if migrations had run).
+`.env`, `vendor/` and the runtime data in `storage/` (cache, logs, reports, sessions) are never touched; the bundled data files in
+`storage/data/` are replaced by the release's versions. Read the [CHANGELOG](../CHANGELOG.md) first. The update does not run by itself: you decide when.
+
+The updater keeps the 10 newest backups in `/var/backups/domainscope` (`--keep N`).
+
+## Backup and restore
+
+```bash
+sudo /var/www/domainscope/backup.sh                       # → /var/backups/domainscope/domainscope-<time>-manual/
+sudo /var/www/domainscope/restore.sh /var/backups/domainscope/domainscope-<time>-<label>   # --code-only | --db-only
+```
+
+A backup holds `db.sql.gz`, `app.tar.gz` (code and bundled data), `env` and `VERSION`. It contains **secrets** (`.env`, password hash): keep
+the directory private (mode 0700) and copy backups off the server. `restore.sh` makes a safety backup of the current state first.
+
+## Uninstall
+
+```bash
+sudo /var/www/domainscope/uninstall.sh [--drop-database]
+```
+
+Makes a final backup (kept), removes the cron job, the virtual host and the directory. The database is only dropped with `--drop-database`
+and only if it is on the same server. You have to type a confirmation phrase.
 
 ## Configuration
 
@@ -86,7 +142,7 @@ php bin/migrate.php            # apply missing migrations
 php bin/migrate.php --status   # show status
 ```
 
-Migrations are SQL files in `database/migrations/` and tracked in the table `schema_migrations`.
+Migrations are applied by `update.sh` automatically. They are SQL files in `database/migrations/` and tracked in the table `schema_migrations`.
 
 ## Cron jobs
 

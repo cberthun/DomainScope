@@ -21,10 +21,14 @@ Open an issue with the version, PHP and database version and a log excerpt (with
 ## Publishing a release (maintainers)
 
 ```bash
-echo 1.0.1 > VERSION                  # new version number (SemVer)
-# CHANGELOG.md: add a section "## [1.0.1]"
-git commit -am "Release 1.0.1" && git push
-git tag 1.0.1 && git push origin 1.0.1
+echo 1.1.1 > VERSION                  # new version number (SemVer)
+# CHANGELOG.md: add a section "## [1.1.1]"
+git commit -am "Release 1.1.1" && git push
+git tag 1.1.1 && git push origin 1.1.1
 ```
 
-The tag is the plain version number **without** `v`. CI checks that `VERSION` is valid and has a CHANGELOG section.
+The tag is the plain version number **without** `v`. The tag starts `.github/workflows/release.yml`: it checks that tag, `VERSION` and
+the CHANGELOG section match, runs the tests, builds `domainscope-<version>.tar.gz` with its `.sha256` (`scripts/make-release.sh`) and creates the
+GitHub release with the CHANGELOG section as notes. Installations update from that release with `update.sh`.
+
+Changes to `install.sh`, `update.sh` or `scripts/lib.sh` need a test in `tests/scripts/update.test.sh` (`bash tests/scripts/update.test.sh`).

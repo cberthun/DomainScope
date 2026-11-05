@@ -47,6 +47,18 @@ jobs:
           TEST_DB_NAME: domainscope_test
         run: vendor/bin/phpunit
 
+  scripts:
+    name: Install and update scripts
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - name: Shell syntax
+        run: |
+          set -e
+          for f in $(git ls-files '*.sh'); do bash -n "$f"; done
+      - name: Script tests (sandbox, no root, no database)
+        run: bash tests/scripts/update.test.sh
+
   secrets:
     name: No secrets in the repository
     runs-on: ubuntu-latest

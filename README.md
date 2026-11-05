@@ -43,20 +43,37 @@ A missing piece of information is never reported as a vulnerability: unreachable
 
 ## Installation
 
-Requirements: **PHP ≥ 8.4** (`curl`, `openssl`, `pdo_mysql`, `mbstring`, `json`), **MySQL 8 or MariaDB ≥ 10.4**, a web server with PHP-FPM
-(or the PHP development server for local use). Composer is only needed for the tests.
+Requirements: **Debian 13 or Ubuntu 24.04** (or another system with **PHP ≥ 8.4**, `curl`, `openssl`, `pdo_mysql`, `mbstring`, **MySQL 8 or
+MariaDB ≥ 10.4** and a web server with PHP-FPM) and root access. The installer takes care of the rest.
 
 ```bash
-git clone https://github.com/cberthun/domainscope.git && cd domainscope
-php bin/setup.php        # creates .env, APP_KEY and the login (asks for user name and password)
-# enter the database credentials in .env, then create the database:
-#   CREATE DATABASE domainscope CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-php bin/migrate.php      # create the schema
-php -S 127.0.0.1:8080 -t public
+# 1. Download the latest release and verify it
+VERSION=$(curl -fsSL https://api.github.com/repos/cberthun/DomainScope/releases/latest | grep -m1 '"tag_name"' | cut -d'"' -f4)
+BASE="https://github.com/cberthun/DomainScope/releases/download/$VERSION"
+curl -fsSLO "$BASE/domainscope-$VERSION.tar.gz"
+curl -fsSLO "$BASE/domainscope-$VERSION.tar.gz.sha256"
+sha256sum -c "domainscope-$VERSION.tar.gz.sha256"
+
+# 2. Extract and install (asks for the login; --install-deps installs PHP, MariaDB and nginx with apt)
+tar -xzf "domainscope-$VERSION.tar.gz" && cd "domainscope-$VERSION"
+sudo ./install.sh --install-deps --domain domainscope.example.org
 ```
 
-Open <http://127.0.0.1:8080> and sign in. For a production setup (Apache/Nginx, HTTPS, cron jobs, hardening) see the
-**[manual](docs/MANUAL.md)**.
+The installer creates the database, writes `.env`, sets up the login, runs the migrations and a self-test, installs the cron job and a
+virtual host. Afterwards **set up HTTPS** (see the [manual](docs/MANUAL.md#https)). All options: `./install.sh --help`.
+
+**Update** (backup, checksum, migrations, health check, automatic rollback): `sudo /var/www/domainscope/update.sh`.
+Also: `backup.sh`, `restore.sh`, `uninstall.sh`. Details in the **[manual](docs/MANUAL.md)**.
+
+For development or a manual setup:
+
+```bash
+git clone https://github.com/cberthun/DomainScope.git && cd DomainScope
+php bin/setup.php        # creates .env, APP_KEY and the login
+# enter the database credentials in .env, create the database, then:
+php bin/migrate.php
+php -S 127.0.0.1:8080 -t public
+```
 
 > DomainScope is a **single-user** application. Do not expose it to the internet without HTTPS (`FORCE_HTTPS=1`), and preferably put it
 > behind a VPN, an IP allow-list (`AUTH_IP_ALLOWLIST`) or HTTP authentication of the web server.
