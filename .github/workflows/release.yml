@@ -28,7 +28,7 @@ jobs:
           for f in $(git ls-files '*.php'); do php -l "$f" > /dev/null; done
           bash tests/scripts/update.test.sh
       - name: Build the release archive
-        run: scripts/make-release.sh
+        run: bash scripts/make-release.sh
       - name: Release notes from the CHANGELOG
         run: awk -v v="$GITHUB_REF_NAME" '$0 ~ "^## \\["v"\\]" {f=1; next} /^## \[/ {f=0} f' CHANGELOG.md > notes.md
       - name: Publish

@@ -46,7 +46,7 @@ nocheck "sha256 rejects wrong sum" bash -c "INSTALL_DIR='$T'; source '$ROOT/scri
 
 # ---- release archive ----------------------------------------------------------------------------
 echo "make-release.sh"
-"$ROOT/scripts/make-release.sh" --output "$T/dist" >/dev/null
+bash "$ROOT/scripts/make-release.sh" --output "$T/dist" >/dev/null
 V="$(tr -d '[:space:]' <"$ROOT/VERSION")"
 check "archive and checksum are created" test -f "$T/dist/domainscope-$V.tar.gz" -a -f "$T/dist/domainscope-$V.tar.gz.sha256"
 ( cd "$T/dist" && sha256sum -c "domainscope-$V.tar.gz.sha256" ) >/dev/null && ok "checksum file is valid" || bad "checksum file is valid"

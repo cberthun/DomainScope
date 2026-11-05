@@ -5,7 +5,7 @@ versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
-## [1.1.0]
+## [1.1.1]
 
 ### Changes
 - **Installer:** `install.sh` for Debian and Ubuntu installs a release archive: checks PHP 8.4 and its extensions, optionally installs the packages (`--install-deps`), creates the database and a database user with a generated password, writes `.env`, sets up the login, runs the migrations and a self-test, installs the cron job and (optionally) an nginx or Apache virtual host. Permissions: code read-only for the web server, `.env` readable only for root and the web group.
@@ -13,6 +13,11 @@ versions follow [Semantic Versioning](https://semver.org/).
 - `backup.sh`, `restore.sh` and `uninstall.sh` (final backup, typed confirmation); `bin/health.php` self-test; `bin/setup.php --password-file=` keeps passwords out of the process list.
 - Release workflow: a version tag builds `domainscope-<version>.tar.gz` with its checksum and publishes the GitHub release. `scripts/make-release.sh` builds the same archive locally.
 - CI runs the script tests (sandbox, no root, no database).
+- Release archives contain executable scripts regardless of the file system the release is built on.
+
+## [1.1.0]
+
+Not published: the release build failed (missing executable bits). Everything is in 1.1.1.
 
 ## [1.0.0]
 

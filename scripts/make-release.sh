@@ -34,6 +34,9 @@ git ls-files -z --cached --others --exclude-standard \
   | while IFS= read -r -d '' f; do [[ -f "$f" ]] && printf '%s\0' "$f"; done \
   | rsync -a --from0 --files-from=- ./ "$STAGE/$NAME/"
 
+# executable scripts (the file mode is not reliable on every file system)
+chmod 755 "$STAGE/$NAME"/{install,update,backup,restore,uninstall}.sh "$STAGE/$NAME"/scripts/*.sh
+
 # runtime directories that are not versioned
 mkdir -p "$STAGE/$NAME"/storage/{cache,logs,reports}
 touch "$STAGE/$NAME"/storage/{cache,logs,reports}/.gitkeep
