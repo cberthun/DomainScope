@@ -1,0 +1,71 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    - cron: '23 5 * * 1'
+
+permissions:
+  contents: read
+
+jobs:
+  php:
+    name: PHP tests
+    runs-on: ubuntu-latest
+    services:
+      db:
+        image: mariadb:11
+        env:
+          MARIADB_ROOT_PASSWORD: ci
+          MARIADB_DATABASE: domainscope_test
+        ports: ['3306:3306']
+        options: >-
+          --health-cmd="healthcheck.sh --connect --innodb_initialized"
+          --health-interval=5s --health-timeout=5s --health-retries=20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # v2
+        with:
+          php-version: '8.5'
+          extensions: curl, openssl, pdo_mysql, mbstring, dom, xmlwriter
+          tools: composer
+      - name: PHP syntax
+        run: |
+          set -e
+          for f in $(git ls-files '*.php'); do php -l "$f" > /dev/null; done
+      - name: Install dependencies
+        run: composer install --no-interaction --prefer-dist
+      - name: Known vulnerabilities in dependencies
+        run: composer audit
+      - name: Tests
+        env:
+          DB_HOST: 127.0.0.1
+          DB_USER: root
+          DB_PASS: ci
+          TEST_DB_NAME: domainscope_test
+        run: vendor/bin/phpunit
+
+  secrets:
+    name: No secrets in the repository
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with: { fetch-depth: 0 }
+      - name: Tracked files that must never be committed
+        run: |
+          if git ls-files | grep -E '(^|/)\.env$|\.sqlite$|^storage/(sessions|logs|cache|reports)/[^.]'; then
+            echo "Forbidden file is tracked"; exit 1
+          fi
+
+  version:
+    name: Version number
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - name: VERSION is valid and appears in the CHANGELOG
+        run: |
+          v="$(tr -d '[:space:]' < VERSION)"
+          [[ "$v" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo "Invalid version: $v"; exit 1; }
+          grep -q "^## \[$v\]" CHANGELOG.md || { echo "CHANGELOG.md has no section for $v"; exit 1; }

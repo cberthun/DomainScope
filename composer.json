@@ -1,0 +1,30 @@
+{
+    "name": "cberthun/domainscope",
+    "description": "DomainScope - self-hosted domain, DNS, email and infrastructure intelligence dashboard",
+    "type": "project",
+    "homepage": "https://github.com/cberthun/domainscope",
+    "license": "AGPL-3.0-or-later",
+    "require": {
+        "php": ">=8.4",
+        "ext-curl": "*",
+        "ext-json": "*",
+        "ext-mbstring": "*",
+        "ext-openssl": "*",
+        "ext-pdo": "*",
+        "ext-pdo_mysql": "*"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^12.0"
+    },
+    "autoload": {
+        "psr-4": { "DomainScope\\": "app/" },
+        "files": ["app/Support/helpers.php", "app/Support/ui.php"]
+    },
+    "autoload-dev": {
+        "psr-4": { "DomainScope\\Tests\\": "tests/" }
+    },
+    "scripts": {
+        "test": "phpunit"
+    },
+    "config": { "sort-packages": true }
+}

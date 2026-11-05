@@ -1,0 +1,21 @@
+name: Report a bug
+description: Something does not work as expected
+labels: [bug]
+body:
+  - type: input
+    id: version
+    attributes: { label: DomainScope version, placeholder: "1.0.0" }
+    validations: { required: true }
+  - type: input
+    id: env
+    attributes: { label: PHP and database version, placeholder: "PHP 8.4, MariaDB 11" }
+  - type: textarea
+    id: what
+    attributes: { label: What happened, and what did you expect? }
+    validations: { required: true }
+  - type: textarea
+    id: logs
+    attributes:
+      label: Log
+      description: "Excerpt from storage/logs/. Please remove passwords, tokens and anything from .env."
+      render: text

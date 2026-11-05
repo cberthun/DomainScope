@@ -1,0 +1,20 @@
+/* Berichte: Bildschirm und Druck */
+body.report { background: var(--bg); }
+.report-page { max-width: 1000px; margin: 1.5rem auto 3rem; background: #fff; color: #1a2230; padding: 2.2rem 2.4rem; border-radius: 6px; box-shadow: 0 2px 14px rgba(0, 0, 0, .12); }
+.report-head { border-bottom: 2px solid #2f6fe4; margin-bottom: 1.4rem; padding-bottom: .8rem; }
+.report-head h1 { font-size: 1.6rem; }
+.report-section { margin-bottom: 1.6rem; break-inside: avoid-page; }
+.report-section h2 { font-size: 1.1rem; margin: 0 0 .5rem; border-bottom: 1px solid #dfe3ea; padding-bottom: .25rem; }
+.report-page .table th { background: #f3f5f8; color: #46505f; position: static; }
+.report-page .table td, .report-page .table th { border-bottom: 1px solid #dfe3ea; font-size: 12.5px; }
+.report-page .muted { color: #6b7686; }
+.report-page ul { padding-left: 1.2rem; }
+@media print {
+    @page { margin: 14mm; }
+    body.report { background: #fff; }
+    .no-print { display: none !important; }
+    .report-page { box-shadow: none; margin: 0; padding: 0; max-width: none; border-radius: 0; }
+    .report-section { break-inside: auto; }
+    .table tr { break-inside: avoid; }
+    a { color: inherit; text-decoration: none; }
+}

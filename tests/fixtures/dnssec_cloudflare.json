@@ -1,0 +1,31 @@
+{
+    "DNSKEY": [
+        {
+            "type": "DNSKEY",
+            "ttl": 31,
+            "data": "256 3 13 oJMRESz5E4gYzS/q6XDrvU1qMPYIjCWzJaOau8XNEZeqCYKD5ar0IRd8KqXXFJkqmVfRvMGPmM1x8fGAa2XhSA=="
+        },
+        {
+            "type": "DNSKEY",
+            "ttl": 31,
+            "data": "257 3 13 mdsswUyr3DPW132mOi8V9xESWE8jTo0dxCjjnopKl+GqJxpVXckHAeF+KkxLbxILfDLUT0rAK9iUzy1L53eKGQ=="
+        },
+        {
+            "type": "RRSIG",
+            "ttl": 31,
+            "data": "DNSKEY 13 2 3600 1797137738 1791867338 2371 cloudflare.com. 9I4zdAhezHHee/lhwiWL4/AwTBtkVkzdi/NbH3BzG81RIa67/GLrxUFiw37LADCuc41vS8k//Zfgzk6kYtAu7Q=="
+        }
+    ],
+    "DS": [
+        {
+            "type": "DS",
+            "ttl": 86400,
+            "data": "2371 13 2 32996839a6d808afe3eb4a795a0e6a7a39a76fc52ff228b22b76f6d63826f2b9"
+        },
+        {
+            "type": "RRSIG",
+            "ttl": 86400,
+            "data": "DS 13 2 86400 1793494786 1792885786 65344 com. rar3Ukdl/+B3zsapfdRIFC5LI4DC7LfqOQHQD/Tqi4VugDTNmp6uyvPeRcOYKfTzCa2ZxHQUFZ7Rryu9AFOOFw=="
+        }
+    ]
+}
